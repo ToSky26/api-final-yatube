@@ -31,18 +31,18 @@ python3 -m venv venv
 ```bash
 source venv/bin/activate
 ```
-### 4. Установить зависимости
+### 3. Установить зависимости
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 5. Выполнить миграции
+### 4. Выполнить миграции
 ```bash
 python manage.py migrate
 ```
 
-### 6. Запустить сервер
+### 5. Запустить сервер
 ```bash
 python manage.py runserver
 ```
