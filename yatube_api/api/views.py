@@ -1,15 +1,15 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions, filters, mixins
 from rest_framework.pagination import LimitOffsetPagination
 
-from posts.models import Post, Group, Follow
+from posts.models import Post, Group
+from .permissions import IsAuthorOrReadOnly
 from .serializers import (
     PostSerializer,
     CommentSerializer,
     GroupSerializer,
     FollowSerializer
 )
-from .permissions import IsAuthorOrReadOnly
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -26,16 +26,17 @@ class PostViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          IsAuthorOrReadOnly)
+                          IsAuthorOrReadOnly,)
 
     def get_post(self):
-        return get_object_or_404(Post, id=self.kwargs.get('post_id'))
+        return get_object_or_404(Post, pk=self.kwargs['post_id'])
 
     def get_queryset(self):
         return self.get_post().comments.all()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user, post=self.get_post())
+        serializer.save(author=self.request.user,
+                        post=self.get_post())
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
@@ -44,14 +45,16 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (permissions.AllowAny,)
 
 
-class FollowViewSet(viewsets.ModelViewSet):
+class FollowViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
+                    viewsets.GenericViewSet):
+
     serializer_class = FollowSerializer
     permission_classes = (permissions.IsAuthenticated,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('following__username',)
 
     def get_queryset(self):
-        return Follow.objects.filter(user=self.request.user)
+        return self.request.user.follower.all()
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
