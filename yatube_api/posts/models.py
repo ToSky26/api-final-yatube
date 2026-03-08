@@ -38,7 +38,7 @@ class Post(models.Model):
         return self.text[:50]
 
     class Meta:
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)
 
 
 class Comment(models.Model):
@@ -55,7 +55,7 @@ class Comment(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created']
+        ordering = ('-created',)
 
 
 class Follow(models.Model):
@@ -71,9 +71,9 @@ class Follow(models.Model):
     )
 
     class Meta:
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['user', 'following'],
                 name='unique_follow'
-            )
-        ]
+            ),
+        )
